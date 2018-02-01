@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.hotelca.poolgame.MainActivity">
+
+    <Button
+        android:id="@+id/findPlayersBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="59dp"
+        android:layout_marginTop="16dp"
+        android:text="Find Players"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        tools:layout_editor_absoluteX="134dp" />
+
+    <SeekBar
+        android:id="@+id/numBallsBar"
+        style="@android:style/Widget.Material.SeekBar.Discrete"
+        android:layout_width="350dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="20dp"
+        android:max="10"
+        android:progress="3"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/numPlayersView" />
+
+    <TextView
+        android:id="@+id/numBallsView"
+        android:layout_width="wrap_content"
+        android:layout_height="34dp"
+        android:layout_marginTop="25dp"
+        app:layout_constraintTop_toBottomOf="@+id/numBallsBar"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        tools:layout_editor_absoluteX="144dp" />
+
+    <Button
+        android:id="@+id/dealBtn"
+        android:layout_width="120dp"
+        android:layout_height="59dp"
+        android:layout_marginTop="16dp"
+        android:text="Deal"
+        app:layout_constraintTop_toBottomOf="@+id/numBallsView"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        tools:layout_editor_absoluteX="132dp" />
+
+    <TextView
+        android:id="@+id/numPlayersView"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginTop="18dp"
+        android:text="Number of Players:"
+        app:layout_constraintTop_toBottomOf="@+id/findPlayersBtn"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        tools:layout_editor_absoluteX="97dp" />
+
+    <TextView
+        android:id="@+id/ballsView"
+        android:layout_width="wrap_content"
+        android:layout_height="76dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/dealBtn"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        tools:layout_editor_absoluteX="15dp" />
+</android.support.constraint.ConstraintLayout>
