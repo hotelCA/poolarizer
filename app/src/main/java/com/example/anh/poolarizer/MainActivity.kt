@@ -64,6 +64,8 @@ class MainActivity : AppCompatActivity() {
         numBallsBar  = findViewById(R.id.numBallsBar)
         numBallsBar!!.min = 1
         numBallsBar!!.max = possibleNumbers.size / numOfPlayers
+        numBallsBar!!.progress = 2
+        numBallsPerPlayer = numBallsBar!!.progress
 
         numPlayersView = findViewById(R.id.numPlayersView)
         numPlayersView!!.text = "Number of Players: " + numOfPlayers.toString()
@@ -79,6 +81,8 @@ class MainActivity : AppCompatActivity() {
 
         dealBtn = findViewById(R.id.dealBtn)
         dealBtn!!.text = DEAL
+
+        disableDealerUI()
 
         numBallsBar!!.setOnSeekBarChangeListener (object: SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int,
@@ -126,6 +130,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         messageClient!!.subscribe(messageListener!!)
+        var intBalls = intArrayOf(5,6,3,4,10)
+        var displayText = ""
     }
 
     override fun onStart() {
@@ -141,6 +147,7 @@ class MainActivity : AppCompatActivity() {
     private fun reset() {
         unpublishMessages()
         dealingMode = false
+        disableDealerUI()
 
         numOfPlayers = 1
         numBallsPerPlayer = 2
@@ -173,15 +180,16 @@ class MainActivity : AppCompatActivity() {
         var content = String(message.content).split(':')
         if (content[0].equals("ARBITRATION")) {
             // Arbitration phase.
+            if (!playerIDs.contains(content[1])) {
+                playerIDs[content[1]] = content[2]
+                numOfPlayers++
+                updateUI()
+            }
+
             if (!selfTimestamp.equals("")) {
-                // Make sure we send our arbitration token first.
-                if (!playerIDs.contains(content[1])) {
-                    playerIDs[content[1]] = content[2]
-                    numOfPlayers++
-                    updateUI()
-                }
                 arbitrate()
             }
+
         } else if (content[0].equals("DEALING")) {
             if (content[1].equals(UUID) && !dealingMode) {
                 balls = content[2].split(',').toMutableList()
@@ -247,11 +255,16 @@ class MainActivity : AppCompatActivity() {
 
     private fun displayBalls(balls: List<String>) {
         var displayText = ""
-        for (ball in balls) {
 
-            displayText += ball + " "
+        var intBalls = balls.map {ball -> ball.toInt()}
+
+        for (ball in intBalls.sorted()) {
+            displayText += ball.toString() + "-"
         }
+
+        displayText.removeSuffix("-")
         ballsView!!.text = displayText
+        toast(displayText)
     }
 
     private fun findPlayers() {
