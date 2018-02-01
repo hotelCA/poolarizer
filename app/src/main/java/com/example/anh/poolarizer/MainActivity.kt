@@ -24,13 +24,17 @@ class MainActivity : AppCompatActivity() {
     private var ANDROID_ID = ""
     private val ARBITRATION = "ARBITRATION"
     private val DEALING = "DEALING"
+    private val RESET = "Reset"
+    private val FIND_PLAYERS = "Find Players"
+    private val DEAL = "Deal"
 
     // Game related variables
     private var numOfPlayers = 1
-    private var numBallsPerPlayer = 3
+    private var numBallsPerPlayer = 2
     private var possibleNumbers = Array<String>(15, {i -> (i+1).toString()})
     private var dealtNumbers = mutableListOf<String>()
     private var balls: List<String>? = null
+    private var dealingMode = false
 
     // Communication related variables
     private var messageListener: MessageListener? = null
@@ -60,13 +64,21 @@ class MainActivity : AppCompatActivity() {
         numBallsBar  = findViewById(R.id.numBallsBar)
         numBallsBar!!.min = 1
         numBallsBar!!.max = possibleNumbers.size / numOfPlayers
+
         numPlayersView = findViewById(R.id.numPlayersView)
+        numPlayersView!!.text = "Number of Players: " + numOfPlayers.toString()
+
         numBallsView = findViewById(R.id.numBallsView)
         numBallsView!!.text = numBallsBar!!.progress.toString()
+
         ballsView = findViewById(R.id.ballsView)
+        ballsView!!.text = ""
 
         findPlayersBtn  = findViewById(R.id.findPlayersBtn)
+        findPlayersBtn!!.text = FIND_PLAYERS
+
         dealBtn = findViewById(R.id.dealBtn)
+        dealBtn!!.text = DEAL
 
         numBallsBar!!.setOnSeekBarChangeListener (object: SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int,
@@ -87,7 +99,11 @@ class MainActivity : AppCompatActivity() {
         })
 
         findPlayersBtn!!.setOnClickListener {
-            findPlayers()
+            if (findPlayersBtn!!.text.equals(FIND_PLAYERS)) {
+                findPlayers()
+            } else if (findPlayersBtn!!.text.equals(RESET)) {
+                reset()
+            }
         }
 
         dealBtn!!.setOnClickListener {
@@ -122,6 +138,24 @@ class MainActivity : AppCompatActivity() {
         super.onStop()
     }
 
+    private fun reset() {
+        unpublishMessages()
+        dealingMode = false
+
+        numOfPlayers = 1
+        numBallsPerPlayer = 2
+        findPlayersBtn!!.text = FIND_PLAYERS
+        dealtNumbers.clear()
+        balls = null
+        selfTimestamp = ""
+        playerIDs.clear()
+
+        numPlayersView!!.text = "Number of Players: " + numOfPlayers.toString()
+        numBallsBar!!.progress = numBallsPerPlayer
+        numBallsView!!.text = numBallsBar!!.progress.toString()
+        ballsView!!.text = ""
+    }
+
     private fun unpublishMessages() {
         messages.forEach {message -> messageClient!!.unpublish(message)}
     }
@@ -149,7 +183,7 @@ class MainActivity : AppCompatActivity() {
                 arbitrate()
             }
         } else if (content[0].equals("DEALING")) {
-            if (content[1].equals(UUID)) {
+            if (content[1].equals(UUID) && !dealingMode) {
                 balls = content[2].split(',').toMutableList()
                 displayBalls(balls!!)
             }
@@ -161,24 +195,30 @@ class MainActivity : AppCompatActivity() {
         playerIDs.forEach { _, timestamp -> if (timestamp.toLong() < selfTimestamp.toLong()) win = false}
 
         if (win) {
+            dealingMode = true
             enableDealerUI()
         } else {
+            dealingMode = false
             disableDealerUI()
         }
     }
 
     private fun enableDealerUI() {
-        findPlayersBtn!!.isEnabled = false
+//        findPlayersBtn!!.isEnabled = false
         dealBtn!!.isEnabled = true
         numBallsBar!!.isEnabled = true
     }
 
     private fun disableDealerUI() {
-        findPlayersBtn!!.isEnabled = false
+//        findPlayersBtn!!.isEnabled = false
         dealBtn!!.isEnabled = false
         numBallsBar!!.isEnabled = false
     }
 
+    private fun initUI(){
+        dealBtn!!.isEnabled = false
+        numBallsBar!!.isEnabled = false
+    }
     private fun dealNumbers() {
         generateNumbers()
 
@@ -203,7 +243,6 @@ class MainActivity : AppCompatActivity() {
             Log.i(TAG, "Self ball: " + ball)
         }
         displayBalls(balls!!)
-        disableDealerUI()
     }
 
     private fun displayBalls(balls: List<String>) {
@@ -222,19 +261,23 @@ class MainActivity : AppCompatActivity() {
         val byteArrayMessage = (ARBITRATION + ":" + UUID + ":" + selfTimestamp).toByteArray()
         messages.add(Message(byteArrayMessage))
         messageClient!!.publish(messages.last())
+        findPlayersBtn!!.text = RESET
     }
 
     private fun generateNumbers() {
+        dealtNumbers.clear()
 
         var totalNumbers = possibleNumbers.size
         // Add 1 for self
         val numbersNeeded = numOfPlayers * numBallsPerPlayer
         fun ClosedRange<Int>.random() = Random().nextInt(endInclusive - start) +  start
+        var randomIndex: Int
 
         for (i in 0 until numbersNeeded) {
-            var randomNumber = (0..totalNumbers).random()
-            dealtNumbers.add(possibleNumbers[randomNumber])
-            swapNumbers(randomNumber, totalNumbers-1)
+            randomIndex = (0..totalNumbers).random()
+            Log.d("Random Index: ", randomIndex.toString())
+            dealtNumbers.add(possibleNumbers[randomIndex])
+            swapNumbers(randomIndex, totalNumbers-1)
             totalNumbers--
         }
 
