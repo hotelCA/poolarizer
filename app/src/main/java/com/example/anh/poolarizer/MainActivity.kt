@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
 //    private var ANDROID_ID = ""
     private val ARBITRATION = "ARBITRATION"
     private val DEALING = "DEALING"
-    private val RESET = "Reset"
+    private val LEAVE = "Leave"
     private val FIND_PLAYERS = "Find Players"
     private val DEAL = "Deal"
 
@@ -90,7 +90,7 @@ class MainActivity : AppCompatActivity() {
         findPlayersBtn!!.setOnClickListener {
             if (findPlayersBtn!!.text == FIND_PLAYERS) {
                 findPlayers()
-            } else if (findPlayersBtn!!.text == RESET) {
+            } else if (findPlayersBtn!!.text == LEAVE) {
                 reset()
             }
         }
@@ -256,7 +256,7 @@ class MainActivity : AppCompatActivity() {
         val byteArrayMessage = "$ARBITRATION:$UUID:$selfTimestamp".toByteArray()
         messages.add(Message(byteArrayMessage))
         messageClient!!.publish(messages.last())
-        findPlayersBtn!!.text = RESET
+        findPlayersBtn!!.text = LEAVE
     }
 
     private fun generateNumbers() {
