@@ -1,6 +1,5 @@
 package com.example.anh.poolarizer
 
-import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -14,7 +13,6 @@ import java.util.*
 import java.util.UUID.randomUUID
 import android.widget.LinearLayout
 import android.widget.NumberPicker
-
 
 
 class MainActivity : AppCompatActivity() {
@@ -32,8 +30,8 @@ class MainActivity : AppCompatActivity() {
     // Game related variables
     private var numOfPlayers = 1
     private var numBallsPerPlayer = 2
-    private var possibleNumbers = Array<String>(15, {i -> (i+1).toString()})
-    private var ballImages = Array<String>(15, {i -> "ball" + (i+1).toString()})
+    private var possibleNumbers = Array(15, {i -> (i+1).toString()})
+    private var ballImages = Array(15, {i -> "ball" + (i+1).toString()})
     private var dealtNumbers = mutableListOf<String>()
     private var balls: List<String>? = null
     private var dealingMode = false
@@ -83,18 +81,16 @@ class MainActivity : AppCompatActivity() {
         imageLayout = findViewById(R.id.imageLayout)
         imageLayout!!.weightSum = weightSum
 
-        disableDealerUI()
-
-        numBallsPicker!!.setOnValueChangedListener(NumberPicker.OnValueChangeListener { picker, oldVal, newVal ->
+        numBallsPicker!!.setOnValueChangedListener { picker, oldVal, newVal ->
 
             numBallsView!!.text = "Number of Balls: " + newVal.toString()
             numBallsPerPlayer = newVal
-        })
+        }
 
         findPlayersBtn!!.setOnClickListener {
-            if (findPlayersBtn!!.text.equals(FIND_PLAYERS)) {
-//                findPlayers()
-            } else if (findPlayersBtn!!.text.equals(RESET)) {
+            if (findPlayersBtn!!.text == FIND_PLAYERS) {
+                findPlayers()
+            } else if (findPlayersBtn!!.text == RESET) {
                 reset()
             }
         }
@@ -119,12 +115,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         messageClient!!.subscribe(messageListener!!)
-        var intBalls = intArrayOf(5,6,3,4,10)
-        var displayText = ""
-    }
-
-    override fun onStart() {
-        super.onStart()
+        disableDealerUI()
     }
 
     override fun onStop() {
@@ -167,7 +158,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun parseMessage(message: Message) {
         var content = String(message.content).split(':')
-        if (content[0].equals("ARBITRATION")) {
+        if (content[0] == "ARBITRATION") {
             // Arbitration phase.
             if (!playerIDs.contains(content[1])) {
                 playerIDs[content[1]] = content[2]
@@ -175,12 +166,12 @@ class MainActivity : AppCompatActivity() {
                 updateUI()
             }
 
-            if (!selfTimestamp.equals("")) {
+            if (selfTimestamp != "") {
                 arbitrate()
             }
 
-        } else if (content[0].equals("DEALING")) {
-            if (content[1].equals(UUID) && !dealingMode) {
+        } else if (content[0] == "DEALING") {
+            if ((content[1] == UUID) && !dealingMode) {
                 balls = content[2].split(',').toMutableList()
                 displayBalls(balls!!)
             }
@@ -224,7 +215,7 @@ class MainActivity : AppCompatActivity() {
                     dealtNumbersPerPlayer += ","
                 }
             }
-            val byteArrayMessage = (DEALING + ":" + listOfPlayerIDs[i] + ":" + dealtNumbersPerPlayer).toByteArray()
+            val byteArrayMessage = "$DEALING:${listOfPlayerIDs[i]}:$dealtNumbersPerPlayer".toByteArray()
             messages.add(Message(byteArrayMessage))
             messageClient!!.publish(messages.last())
         }
@@ -238,7 +229,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun displayBalls(balls: List<String>) {
-//        var displayText = ""
 
         var intBalls = balls.map {ball -> ball.toInt()}
 
@@ -256,18 +246,14 @@ class MainActivity : AppCompatActivity() {
             newBallImage.setImageResource(resID)
             newBallImage.layoutParams = layoutParams
             imageLayout!!.addView(newBallImage)
-
-//            displayText += ball.toString() + "-"
         }
-
-//        ballsView!!.text = displayText.removeSuffix("-")
     }
 
     private fun findPlayers() {
         toast("Finding Players...")
 
         selfTimestamp = currentTimeMillis().toString()
-        val byteArrayMessage = (ARBITRATION + ":" + UUID + ":" + selfTimestamp).toByteArray()
+        val byteArrayMessage = "$ARBITRATION:$UUID:$selfTimestamp".toByteArray()
         messages.add(Message(byteArrayMessage))
         messageClient!!.publish(messages.last())
         findPlayersBtn!!.text = RESET
