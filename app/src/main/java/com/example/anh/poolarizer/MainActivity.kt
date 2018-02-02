@@ -2,12 +2,8 @@ package com.example.anh.poolarizer
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.provider.Settings.Secure
 import android.util.Log
-import android.widget.Button
-import android.widget.SeekBar
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import com.google.android.gms.nearby.Nearby
 import com.google.android.gms.nearby.messages.Message
 import com.google.android.gms.nearby.messages.MessageListener
@@ -15,13 +11,15 @@ import com.google.android.gms.nearby.messages.MessagesClient
 import java.lang.System.currentTimeMillis
 import java.util.*
 import java.util.UUID.randomUUID
+import android.widget.LinearLayout
+
 
 class MainActivity : AppCompatActivity() {
 
     // "Constants"
     private val TAG = "ETM"
     private val UUID = randomUUID().toString()
-    private var ANDROID_ID = ""
+//    private var ANDROID_ID = ""
     private val ARBITRATION = "ARBITRATION"
     private val DEALING = "DEALING"
     private val RESET = "Reset"
@@ -32,6 +30,7 @@ class MainActivity : AppCompatActivity() {
     private var numOfPlayers = 1
     private var numBallsPerPlayer = 2
     private var possibleNumbers = Array<String>(15, {i -> (i+1).toString()})
+    private var ballImages = Array<String>(15, {i -> "ball" + (i+1).toString()})
     private var dealtNumbers = mutableListOf<String>()
     private var balls: List<String>? = null
     private var dealingMode = false
@@ -50,15 +49,15 @@ class MainActivity : AppCompatActivity() {
     private var numBallsView: TextView? = null
     private var ballsView: TextView? = null
     private var numBallsBar: SeekBar? = null
-
+    private var imageLayout: LinearLayout? = null
+    private var weightSum = 6f
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        ANDROID_ID = Secure.getString(contentResolver, Secure.ANDROID_ID)
+//        ANDROID_ID = Secure.getString(contentResolver, Secure.ANDROID_ID)
 
-        Log.i(TAG, ANDROID_ID)
         Log.i(TAG, UUID)
 
         numBallsBar  = findViewById(R.id.numBallsBar)
@@ -71,7 +70,7 @@ class MainActivity : AppCompatActivity() {
         numPlayersView!!.text = "Number of Players: " + numOfPlayers.toString()
 
         numBallsView = findViewById(R.id.numBallsView)
-        numBallsView!!.text = numBallsBar!!.progress.toString()
+        numBallsView!!.text = "Number of Balls: " + numBallsBar!!.progress.toString()
 
         ballsView = findViewById(R.id.ballsView)
         ballsView!!.text = ""
@@ -82,13 +81,16 @@ class MainActivity : AppCompatActivity() {
         dealBtn = findViewById(R.id.dealBtn)
         dealBtn!!.text = DEAL
 
+        imageLayout = findViewById(R.id.imageLayout)
+        imageLayout!!.weightSum = weightSum
+
         disableDealerUI()
 
         numBallsBar!!.setOnSeekBarChangeListener (object: SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int,
                                            fromUser: Boolean) {
                 if (fromUser) {
-                    numBallsView!!.text = progress.toString()
+                    numBallsView!!.text = "Number of Balls: " + progress.toString()
                     numBallsPerPlayer = progress.toInt()
                 }
             }
@@ -104,7 +106,7 @@ class MainActivity : AppCompatActivity() {
 
         findPlayersBtn!!.setOnClickListener {
             if (findPlayersBtn!!.text.equals(FIND_PLAYERS)) {
-                findPlayers()
+//                findPlayers()
             } else if (findPlayersBtn!!.text.equals(RESET)) {
                 reset()
             }
@@ -146,6 +148,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun reset() {
         unpublishMessages()
+        imageLayout!!.removeAllViews()
         dealingMode = false
         disableDealerUI()
 
@@ -159,7 +162,7 @@ class MainActivity : AppCompatActivity() {
 
         numPlayersView!!.text = "Number of Players: " + numOfPlayers.toString()
         numBallsBar!!.progress = numBallsPerPlayer
-        numBallsView!!.text = numBallsBar!!.progress.toString()
+        numBallsView!!.text = "Number of Balls: " + numBallsBar!!.progress.toString()
         ballsView!!.text = ""
     }
 
@@ -170,7 +173,7 @@ class MainActivity : AppCompatActivity() {
     private fun updateUI() {
         numBallsBar!!.max = possibleNumbers.size / numOfPlayers
         numPlayersView!!.text = "Number of players: " + numOfPlayers.toString()
-        numBallsView!!.text = numBallsBar!!.progress.toString()
+        numBallsView!!.text = "Number of Balls: " + numBallsBar!!.progress.toString()
         for ((id, timestamp) in playerIDs) {
             Log.i(TAG, id + ": " + timestamp)
         }
@@ -212,22 +215,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun enableDealerUI() {
-//        findPlayersBtn!!.isEnabled = false
         dealBtn!!.isEnabled = true
         numBallsBar!!.isEnabled = true
     }
 
     private fun disableDealerUI() {
-//        findPlayersBtn!!.isEnabled = false
         dealBtn!!.isEnabled = false
         numBallsBar!!.isEnabled = false
     }
 
-    private fun initUI(){
-        dealBtn!!.isEnabled = false
-        numBallsBar!!.isEnabled = false
-    }
     private fun dealNumbers() {
+        imageLayout!!.removeAllViews()
         generateNumbers()
 
         // Send out numbers to other players
@@ -254,17 +252,29 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun displayBalls(balls: List<String>) {
-        var displayText = ""
+//        var displayText = ""
 
         var intBalls = balls.map {ball -> ball.toInt()}
 
+        var weight = 1f
+        if (intBalls.size > 6) {
+            weight = weightSum / intBalls.size
+        }
+        val layoutParams = LinearLayout.LayoutParams(0,
+                                                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                                                        weight)
+
         for (ball in intBalls.sorted()) {
-            displayText += ball.toString() + "-"
+            var newBallImage = ImageView(this)
+            val resID = resources.getIdentifier(ballImages[ball-1], "drawable", packageName)
+            newBallImage.setImageResource(resID)
+            newBallImage.layoutParams = layoutParams
+            imageLayout!!.addView(newBallImage)
+
+//            displayText += ball.toString() + "-"
         }
 
-        displayText.removeSuffix("-")
-        ballsView!!.text = displayText
-        toast(displayText)
+//        ballsView!!.text = displayText.removeSuffix("-")
     }
 
     private fun findPlayers() {
