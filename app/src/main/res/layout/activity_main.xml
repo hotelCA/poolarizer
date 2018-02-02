@@ -24,26 +24,26 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/findPlayersBtn" />
 
-    <SeekBar
-        android:id="@+id/numBallsBar"
-        style="@android:style/Widget.Material.SeekBar.Discrete"
-        android:layout_width="350dp"
-        android:layout_height="48dp"
-        android:layout_marginTop="16dp"
-        android:max="10"
-        android:progress="3"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+    <NumberPicker
+        android:id="@+id/numBallsPicker"
+        android:theme="@style/AppTheme.Picker"
+        android:layout_width="81dp"
+        android:layout_height="113dp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/numPlayersView" />
 
     <TextView
         android:id="@+id/numBallsView"
         android:layout_width="wrap_content"
         android:layout_height="34dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
+        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/numBallsBar" />
+        app:layout_constraintTop_toBottomOf="@+id/numBallsPicker" />
 
     <Button
         android:id="@+id/dealBtn"
@@ -54,24 +54,16 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/numBallsView" />
 
-    <TextView
-        android:id="@+id/ballsView"
-        android:layout_width="44dp"
-        android:layout_height="5dp"
-        android:layout_marginTop="16dp"
-        android:textSize="24sp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/dealBtn" />
-
     <LinearLayout
         android:id="@+id/imageLayout"
         android:layout_width="wrap_content"
         android:layout_height="70dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="40dp"
         android:gravity="center_vertical|center_horizontal"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ballsView"></LinearLayout>
+        app:layout_constraintTop_toBottomOf="@+id/dealBtn"></LinearLayout>
+
 </android.support.constraint.ConstraintLayout>

@@ -1,5 +1,6 @@
 package com.example.anh.poolarizer
 
+import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -12,6 +13,8 @@ import java.lang.System.currentTimeMillis
 import java.util.*
 import java.util.UUID.randomUUID
 import android.widget.LinearLayout
+import android.widget.NumberPicker
+
 
 
 class MainActivity : AppCompatActivity() {
@@ -47,8 +50,7 @@ class MainActivity : AppCompatActivity() {
     private var dealBtn: Button? = null
     private var numPlayersView: TextView? = null
     private var numBallsView: TextView? = null
-    private var ballsView: TextView? = null
-    private var numBallsBar: SeekBar? = null
+    private var numBallsPicker: NumberPicker? = null
     private var imageLayout: LinearLayout? = null
     private var weightSum = 6f
 
@@ -60,20 +62,17 @@ class MainActivity : AppCompatActivity() {
 
         Log.i(TAG, UUID)
 
-        numBallsBar  = findViewById(R.id.numBallsBar)
-        numBallsBar!!.min = 1
-        numBallsBar!!.max = possibleNumbers.size / numOfPlayers
-        numBallsBar!!.progress = 2
-        numBallsPerPlayer = numBallsBar!!.progress
+        numBallsPicker = findViewById(R.id.numBallsPicker)
+        numBallsPicker!!.minValue = 1
+        numBallsPicker!!.maxValue = possibleNumbers.size / numOfPlayers
+        numBallsPicker!!.value = 2
+        numBallsPerPlayer = numBallsPicker!!.value
 
         numPlayersView = findViewById(R.id.numPlayersView)
         numPlayersView!!.text = "Number of Players: " + numOfPlayers.toString()
 
         numBallsView = findViewById(R.id.numBallsView)
-        numBallsView!!.text = "Number of Balls: " + numBallsBar!!.progress.toString()
-
-        ballsView = findViewById(R.id.ballsView)
-        ballsView!!.text = ""
+        numBallsView!!.text = "Number of Balls: " + numBallsPicker!!.value.toString()
 
         findPlayersBtn  = findViewById(R.id.findPlayersBtn)
         findPlayersBtn!!.text = FIND_PLAYERS
@@ -86,22 +85,10 @@ class MainActivity : AppCompatActivity() {
 
         disableDealerUI()
 
-        numBallsBar!!.setOnSeekBarChangeListener (object: SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar, progress: Int,
-                                           fromUser: Boolean) {
-                if (fromUser) {
-                    numBallsView!!.text = "Number of Balls: " + progress.toString()
-                    numBallsPerPlayer = progress.toInt()
-                }
-            }
+        numBallsPicker!!.setOnValueChangedListener(NumberPicker.OnValueChangeListener { picker, oldVal, newVal ->
 
-            override fun onStartTrackingTouch(seekBar: SeekBar) {
-                // called when tracking the seekbar is started
-            }
-
-            override fun onStopTrackingTouch(seekBar: SeekBar) {
-                // called when tracking the seekbar is stopped
-            }
+            numBallsView!!.text = "Number of Balls: " + newVal.toString()
+            numBallsPerPlayer = newVal
         })
 
         findPlayersBtn!!.setOnClickListener {
@@ -161,9 +148,8 @@ class MainActivity : AppCompatActivity() {
         playerIDs.clear()
 
         numPlayersView!!.text = "Number of Players: " + numOfPlayers.toString()
-        numBallsBar!!.progress = numBallsPerPlayer
-        numBallsView!!.text = "Number of Balls: " + numBallsBar!!.progress.toString()
-        ballsView!!.text = ""
+        numBallsPicker!!.value = numBallsPerPlayer
+        numBallsView!!.text = "Number of Balls: " + numBallsPicker!!.value.toString()
     }
 
     private fun unpublishMessages() {
@@ -171,9 +157,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateUI() {
-        numBallsBar!!.max = possibleNumbers.size / numOfPlayers
+        numBallsPicker!!.maxValue = possibleNumbers.size / numOfPlayers
         numPlayersView!!.text = "Number of players: " + numOfPlayers.toString()
-        numBallsView!!.text = "Number of Balls: " + numBallsBar!!.progress.toString()
+        numBallsView!!.text = "Number of Balls: " + numBallsPicker!!.value.toString()
         for ((id, timestamp) in playerIDs) {
             Log.i(TAG, id + ": " + timestamp)
         }
@@ -216,12 +202,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun enableDealerUI() {
         dealBtn!!.isEnabled = true
-        numBallsBar!!.isEnabled = true
+        numBallsPicker!!.isEnabled = true
     }
 
     private fun disableDealerUI() {
         dealBtn!!.isEnabled = false
-        numBallsBar!!.isEnabled = false
+        numBallsPicker!!.isEnabled = false
     }
 
     private fun dealNumbers() {

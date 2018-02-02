@@ -14,7 +14,8 @@
             android:name="com.google.android.nearby.messages.API_KEY"
             android:value="AIzaSyBWyRffVYOceVVQIgknHa9T4VXoC-tD068" />
 
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity"
+                  android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
