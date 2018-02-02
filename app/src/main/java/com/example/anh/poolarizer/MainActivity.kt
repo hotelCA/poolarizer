@@ -2,6 +2,7 @@ package com.example.anh.poolarizer
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.widget.*
 import com.google.android.gms.nearby.Nearby
@@ -20,9 +21,10 @@ class MainActivity : AppCompatActivity() {
     // "Constants"
     private val TAG = "ETM"
     private val UUID = randomUUID().toString()
-//    private var ANDROID_ID = ""
+    private var ANDROID_ID = ""
     private val ARBITRATION = "ARBITRATION"
     private val DEALING = "DEALING"
+    private val STATUS = "STATUS"
     private val LEAVE = "Leave"
     private val FIND_PLAYERS = "Find Players"
     private val DEAL = "Deal"
@@ -56,9 +58,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-//        ANDROID_ID = Secure.getString(contentResolver, Secure.ANDROID_ID)
+        ANDROID_ID = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
 
-        Log.i(TAG, UUID)
+        Log.i(TAG, ANDROID_ID)
 
         numBallsPicker = findViewById(R.id.numBallsPicker)
         numBallsPicker!!.minValue = 1
@@ -127,6 +129,8 @@ class MainActivity : AppCompatActivity() {
     private fun reset() {
         unpublishMessages()
         imageLayout!!.removeAllViews()
+        messageClient!!.unsubscribe(messageListener!!)
+        messageClient!!.subscribe(messageListener!!)
         dealingMode = false
         disableDealerUI()
 
@@ -160,7 +164,7 @@ class MainActivity : AppCompatActivity() {
         var content = String(message.content).split(':')
         if (content[0] == "ARBITRATION") {
             // Arbitration phase.
-            if (!playerIDs.contains(content[1])) {
+            if (content[1] !in playerIDs) {
                 playerIDs[content[1]] = content[2]
                 numOfPlayers++
                 updateUI()
@@ -171,8 +175,9 @@ class MainActivity : AppCompatActivity() {
             }
 
         } else if (content[0] == "DEALING") {
-            if ((content[1] == UUID) && !dealingMode) {
+            if ((content[1] == ANDROID_ID) && !dealingMode) {
                 balls = content[2].split(',').toMutableList()
+                imageLayout!!.removeAllViews()
                 displayBalls(balls!!)
             }
         }
@@ -253,7 +258,7 @@ class MainActivity : AppCompatActivity() {
         toast("Finding Players...")
 
         selfTimestamp = currentTimeMillis().toString()
-        val byteArrayMessage = "$ARBITRATION:$UUID:$selfTimestamp".toByteArray()
+        val byteArrayMessage = "$ARBITRATION:$ANDROID_ID:$selfTimestamp".toByteArray()
         messages.add(Message(byteArrayMessage))
         messageClient!!.publish(messages.last())
         findPlayersBtn!!.text = LEAVE
