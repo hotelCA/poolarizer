@@ -20,7 +20,6 @@ import android.widget.LinearLayout
 import android.widget.NumberPicker
 import com.google.android.gms.nearby.connection.*
 import com.google.android.gms.nearby.connection.Strategy.P2P_CLUSTER
-import com.google.android.gms.nearby.connection.Strategy.P2P_STAR
 import com.google.android.gms.nearby.messages.Strategy
 import com.google.android.gms.nearby.messages.SubscribeOptions
 import com.google.android.gms.tasks.OnFailureListener
@@ -34,10 +33,7 @@ class MainActivity : AppCompatActivity() {
 
     val MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 5
     val STRATEGY = P2P_CLUSTER
-    val USERNAME = "Anh's OnePlus3"
-    val USERNAME_2 = "Client 1"
     var connectionsClient: ConnectionsClient? = null
-    private var opponentEndpointId: String = ""
 
     /////////////////////////////////////
 
@@ -45,10 +41,10 @@ class MainActivity : AppCompatActivity() {
     private val TAG = "ETM"
     private val UUID = randomUUID().toString()
     private var ANDROID_ID = ""
-    private val ARBITRATION = "ARB"
-    private val DEALING = "DEAL"
-    private val STATUS = "STATUS"
-    private val LEAVE = "Leave"
+//    private val ARBITRATION = "ARB"
+//    private val DEALING = "DEAL"
+//    private val STATUS = "STATUS"
+//    private val LEAVE = "Leave"
     private val FIND_PLAYERS = "Find Players"
     private val DEAL = "Deal"
 
@@ -59,22 +55,23 @@ class MainActivity : AppCompatActivity() {
     private var ballImages = Array(15, {i -> "ball" + (i+1).toString()})
     private var dealtNumbers = mutableListOf<String>()
     private var balls: List<String>? = null
-    private var dealingMode = false
+//    private var dealingMode = false
 
     // Communication related variables
-    private var messageListener: MessageListener? = null
-    private var messageClient: MessagesClient? = null
-    private var messages = mutableListOf<Message>()
-    private var selfTimestamp = ""
-    private var playerIDs = mutableMapOf<String, String>()
-    private val strategy = Strategy.Builder()
-            .setDiscoveryMode(Strategy.DISCOVERY_MODE_DEFAULT)
-            .setDistanceType(Strategy.DISTANCE_TYPE_DEFAULT)
-            .setTtlSeconds(Strategy.TTL_SECONDS_DEFAULT)
-            .build()
-    private val options = SubscribeOptions.Builder()
-            .setStrategy(strategy)
-            .build()
+//    private var messageListener: MessageListener? = null
+//    private var messageClient: MessagesClient? = null
+//    private var messages = mutableListOf<Message>()
+//    private var selfTimestamp = ""
+//    private var playerIDs = mutableMapOf<String, String>()
+    private var opponentIDs = mutableSetOf<String>()
+//    private val strategy = Strategy.Builder()
+//            .setDiscoveryMode(Strategy.DISCOVERY_MODE_DEFAULT)
+//            .setDistanceType(Strategy.DISTANCE_TYPE_DEFAULT)
+//            .setTtlSeconds(Strategy.TTL_SECONDS_DEFAULT)
+//            .build()
+//    private val options = SubscribeOptions.Builder()
+//            .setStrategy(strategy)
+//            .build()
 
     // UI Variables
     private var findPlayersBtn: Button? = null
@@ -121,38 +118,31 @@ class MainActivity : AppCompatActivity() {
         }
 
         findPlayersBtn!!.setOnClickListener {
-            if (findPlayersBtn!!.text == FIND_PLAYERS) {
-//                findPlayers()
-                /////////////////////// Nearby Connections
-                connectionsClient = Nearby.getConnectionsClient(this)
-                connectionsClient!!.stopAdvertising()
-                startAdvertising()
-                connectionsClient!!.stopDiscovery()
-                startDiscovery()
-                /////////////////////////////////////////
-            } else if (findPlayersBtn!!.text == LEAVE) {
-                reset()
-            }
+//            if (findPlayersBtn!!.text == FIND_PLAYERS) {
+                findPlayers()
+//            } else if (findPlayersBtn!!.text == LEAVE) {
+//                reset()
+//            }
         }
 
         dealBtn!!.setOnClickListener {
             dealNumbers()
         }
 
-        messageClient = Nearby.getMessagesClient(this)
-        this.messageListener = object: MessageListener() {
-
-            override fun onFound(message: Message) {
-                Log.i(TAG, "Found message: " + String(message.content))
-                toast("Found: " + String(message.content))
-                parseMessage(message)
-            }
-
-            override fun onLost(message: Message) {
-                Log.i(TAG, "Lost sight of message: " + String(message.content))
-                toast("Lost: " + String(message.content))
-            }
-        }
+//        messageClient = Nearby.getMessagesClient(this)
+//        this.messageListener = object: MessageListener() {
+//
+//            override fun onFound(message: Message) {
+//                Log.i(TAG, "Found message: " + String(message.content))
+//                toast("Found: " + String(message.content))
+//                parseMessage(message)
+//            }
+//
+//            override fun onLost(message: Message) {
+//                Log.i(TAG, "Lost sight of message: " + String(message.content))
+//                toast("Lost: " + String(message.content))
+//            }
+//        }
 
 
 //        messageClient!!.subscribe(messageListener!!, options)
@@ -161,17 +151,38 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
-        unpublishMessages()
-        messageClient!!.unsubscribe(messageListener!!)
+        connectionsClient!!.stopDiscovery()
+        connectionsClient!!.stopAdvertising()
+//        unpublishMessages()
+//        messageClient!!.unsubscribe(messageListener!!)
         super.onStop()
     }
 
+
+    private fun findPlayers() {
+        /////////////////////// Nearby Connections
+        connectionsClient = Nearby.getConnectionsClient(this)
+        connectionsClient!!.stopAdvertising()
+        startAdvertising()
+        connectionsClient!!.stopDiscovery()
+        startDiscovery()
+        /////////////////////////////////////////
+//        selfTimestamp = currentTimeMillis().toString().drop(7)
+//        val byteArrayMessage = "$ARBITRATION:$ANDROID_ID:$selfTimestamp".toByteArray()
+//        messages.add(Message(byteArrayMessage))
+//        messageClient!!.publish(messages.last())
+//        Log.i(TAG, selfTimestamp)
+//        findPlayersBtn!!.text = LEAVE
+    }
+
     private fun reset() {
-        unpublishMessages()
+        connectionsClient!!.stopDiscovery()
+        connectionsClient!!.stopAdvertising()
+//        unpublishMessages()
         imageLayout!!.removeAllViews()
 //        messageClient!!.unsubscribe(messageListener!!)
 //        messageClient!!.subscribe(messageListener!!, options)
-        dealingMode = false
+//        dealingMode = false
         disableDealerUI()
 
         numOfPlayers = 1
@@ -179,88 +190,88 @@ class MainActivity : AppCompatActivity() {
         findPlayersBtn!!.text = FIND_PLAYERS
         dealtNumbers.clear()
         balls = null
-        selfTimestamp = ""
-        playerIDs.clear()
+//        selfTimestamp = ""
+//        playerIDs.clear()
 
         numPlayersView!!.text = "Number of Players: " + numOfPlayers.toString()
         numBallsPicker!!.value = numBallsPerPlayer
         numBallsView!!.text = "Number of Balls: " + numBallsPicker!!.value.toString()
     }
 
-    private fun unpublishMessages() {
-        messages.forEach {message -> messageClient!!.unpublish(message)}
-    }
+//    private fun unpublishMessages() {
+//        messages.forEach {message -> messageClient!!.unpublish(message)}
+//    }
 
     private fun updateUI() {
         numBallsPicker!!.maxValue = possibleNumbers.size / numOfPlayers
         numPlayersView!!.text = "Number of players: " + numOfPlayers.toString()
         numBallsView!!.text = "Number of Balls: " + numBallsPicker!!.value.toString()
-        for ((id, timestamp) in playerIDs) {
-            Log.i(TAG, id + ": " + timestamp)
+        for (id in opponentIDs) {
+            Log.i(TAG, "Opponent ID: $id")
         }
     }
 
-    private fun parseMessage(message: Message) {
-        var content = String(message.content).split(':')
-        if (content[0] == ARBITRATION) {
-            // Arbitration phase.
-            if (content[1] !in playerIDs) {
-                playerIDs[content[1]] = content[2]
-                numOfPlayers++
-                updateUI()
-            }
+//    private fun parseMessage(message: Message) {
+//        var content = String(message.content).split(':')
+//        if (content[0] == ARBITRATION) {
+//             Arbitration phase.
+//            if (content[1] !in playerIDs) {
+//                playerIDs[content[1]] = content[2]
+//                numOfPlayers++
+//                updateUI()
+//            }
+//
+//            if (selfTimestamp != "") {
+//                arbitrate()
+//            }
+//
+//        } else if (content[0] == DEALING) {
+//            if ((content[1] == ANDROID_ID) && !dealingMode) {
+//                balls = content[2].split(',').toMutableList()
+//                imageLayout!!.removeAllViews()
+//                displayBalls(balls!!)
+//                deleteMessages(ANDROID_ID)
+//                notifyDealer(content[1])
+//            }
+//
+//        } else if (content[0] == STATUS) {
+//            deleteMessages(content[1])
+//            deleteMessages(ANDROID_ID)
+//        }
+//    }
 
-            if (selfTimestamp != "") {
-                arbitrate()
-            }
+//    private fun arbitrate() {
+//        var win = true
+//
+//        for ((_, timestamp) in playerIDs) {
+//            if (timestamp.toInt() < selfTimestamp.toInt()) {
+//                win = false
+//                break
+//            }
+//        }
+//
+//        if (win) {
+//            dealingMode = true
+//            enableDealerUI()
+//        } else {
+//            dealingMode = false
+//            disableDealerUI()
+//        }
+//    }
 
-        } else if (content[0] == DEALING) {
-            if ((content[1] == ANDROID_ID) && !dealingMode) {
-                balls = content[2].split(',').toMutableList()
-                imageLayout!!.removeAllViews()
-                displayBalls(balls!!)
-                deleteMessages(ANDROID_ID)
-                notifyDealer(content[1])
-            }
-
-        } else if (content[0] == STATUS) {
-            deleteMessages(content[1])
-            deleteMessages(ANDROID_ID)
-        }
-    }
-
-    private fun arbitrate() {
-        var win = true
-
-        for ((_, timestamp) in playerIDs) {
-            if (timestamp.toInt() < selfTimestamp.toInt()) {
-                win = false
-                break
-            }
-        }
-
-        if (win) {
-            dealingMode = true
-            enableDealerUI()
-        } else {
-            dealingMode = false
-            disableDealerUI()
-        }
-    }
-
-    private fun notifyDealer(stringMsg: String) {
-        val byteArrayMessage = "$STATUS:stringMsg".toByteArray()
-        messages.add(Message(byteArrayMessage))
-        messageClient!!.publish(messages.last())
-    }
-
-    private fun deleteMessages(playerID: String) {
-        for (message in messages) {
-            if (playerID in message.content.toString()) {
-                messageClient!!.unpublish(message)
-            }
-        }
-    }
+//    private fun notifyDealer(stringMsg: String) {
+//        val byteArrayMessage = "$STATUS:stringMsg".toByteArray()
+//        messages.add(Message(byteArrayMessage))
+//        messageClient!!.publish(messages.last())
+//    }
+//
+//    private fun deleteMessages(playerID: String) {
+//        for (message in messages) {
+//            if (playerID in message.content.toString()) {
+//                messageClient!!.unpublish(message)
+//            }
+//        }
+//    }
 
     private fun enableDealerUI() {
         dealBtn!!.isEnabled = true
@@ -273,11 +284,29 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun dealNumbers() {
+        connectionsClient!!.stopDiscovery()
+        connectionsClient!!.stopAdvertising()
         imageLayout!!.removeAllViews()
         generateNumbers()
 
         // Send out numbers to other players
-        val listOfPlayerIDs = playerIDs.keys.toList()
+//        val listOfPlayerIDs = playerIDs.keys.toList()
+//        for (i in 0 until listOfPlayerIDs.size) {
+//            var dealtNumbersPerPlayer = ""
+//            for (j in 0 until numBallsPerPlayer) {
+//                dealtNumbersPerPlayer += dealtNumbers[i*listOfPlayerIDs.size + j]
+//                if (j != numBallsPerPlayer-1) {
+//                    dealtNumbersPerPlayer += ","
+//                }
+//            }
+//            val byteArrayMessage = "$DEALING:${listOfPlayerIDs[i]}:$dealtNumbersPerPlayer".toByteArray()
+//            messages.add(Message(byteArrayMessage))
+//            messageClient!!.publish(messages.last())
+
+
+//        }
+
+        val listOfPlayerIDs = opponentIDs.toList()
         for (i in 0 until listOfPlayerIDs.size) {
             var dealtNumbersPerPlayer = ""
             for (j in 0 until numBallsPerPlayer) {
@@ -286,9 +315,8 @@ class MainActivity : AppCompatActivity() {
                     dealtNumbersPerPlayer += ","
                 }
             }
-            val byteArrayMessage = "$DEALING:${listOfPlayerIDs[i]}:$dealtNumbersPerPlayer".toByteArray()
-            messages.add(Message(byteArrayMessage))
-            messageClient!!.publish(messages.last())
+
+            sendPayload(dealtNumbersPerPlayer, listOfPlayerIDs[i])
         }
 
         // Set numbers for self
@@ -318,17 +346,6 @@ class MainActivity : AppCompatActivity() {
             newBallImage.layoutParams = layoutParams
             imageLayout!!.addView(newBallImage)
         }
-    }
-
-    private fun findPlayers() {
-        toast("Finding Players...")
-
-        selfTimestamp = currentTimeMillis().toString().drop(7)
-        val byteArrayMessage = "$ARBITRATION:$ANDROID_ID:$selfTimestamp".toByteArray()
-        messages.add(Message(byteArrayMessage))
-        messageClient!!.publish(messages.last())
-        Log.i(TAG, selfTimestamp)
-        findPlayersBtn!!.text = LEAVE
     }
 
     private fun generateNumbers() {
@@ -400,12 +417,14 @@ class MainActivity : AppCompatActivity() {
                 endpointId: String, discoveredEndpointInfo: DiscoveredEndpointInfo) {
 
             Log.i(TAG, "onEndpointFound: endpoint found, connecting")
-            toast("Server found.")
+            toast("Endpoint found.")
+
             connectionsClient!!.requestConnection(ANDROID_ID, endpointId, connectionLifecycleCallback);
         }
 
         override fun onEndpointLost(endpointId: String) {
             Log.i(TAG, "onEndpointFound: endpoint connection lost")
+            toast("Endpoint lost.")
         }
     }
 
@@ -413,29 +432,48 @@ class MainActivity : AppCompatActivity() {
         override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
             Log.i(TAG, "onConnectionInitiated: accepting connection")
             connectionsClient!!.acceptConnection(endpointId, payloadCallback)
-            var opponentName = connectionInfo.endpointName
         }
 
         override fun onConnectionResult(endpointId: String, result: ConnectionResolution) {
             if (result.status.isSuccess) {
                 Log.i(TAG, "onConnectionResult: connection successful")
                 toast("Connection Successful!")
-                connectionsClient!!.stopDiscovery()
-                connectionsClient!!.stopAdvertising()
-                opponentEndpointId = endpointId
+//                connectionsClient!!.stopDiscovery()
+//                connectionsClient!!.stopAdvertising()
+                if (endpointId !in opponentIDs) {
+                    opponentIDs.add(endpointId)
+                }
+                numOfPlayers++
+                updateUI()
+                enableDealerUI()
             } else {
                 Log.i(TAG, "onConnectionResult: connection failed")
+                toast("Connection Failed!")
             }
         }
 
         override fun onDisconnected(endpointId: String) {
             Log.i(TAG, "onDisconnected: disconnected from the opponent")
+            toast("Disconnect!")
+            if (endpointId in opponentIDs) {
+                opponentIDs.remove(endpointId)
+                numOfPlayers--
+                if (opponentIDs.size == 0) {
+                    disableDealerUI()
+                }
+            }
         }
     }
 
     private val payloadCallback = object : PayloadCallback() {
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
-            var selectedNumbers = String(payload.asBytes()!!, UTF_8)
+            connectionsClient!!.stopDiscovery()
+            connectionsClient!!.stopAdvertising()
+
+            val selectedNumbers = String(payload.asBytes()!!, UTF_8)
+            balls = selectedNumbers.split(',').toMutableList()
+            imageLayout!!.removeAllViews()
+            displayBalls(balls!!)
         }
 
         override fun onPayloadTransferUpdate(endpointId: String, update: PayloadTransferUpdate) {
@@ -445,12 +483,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun sendPayload(payLoad: IntArray) {
+    private fun sendPayload(payLoad: String, opponentId: String) {
         val bytePayLoad = payLoad.map {x -> x.toByte()}.toByteArray()
-        connectionsClient!!.sendPayload(
-                opponentEndpointId,
-                Payload.fromBytes(bytePayLoad)
-        )
+        connectionsClient!!.sendPayload(opponentId, Payload.fromBytes(bytePayLoad))
     }
 
     private fun checkForPermission() {
